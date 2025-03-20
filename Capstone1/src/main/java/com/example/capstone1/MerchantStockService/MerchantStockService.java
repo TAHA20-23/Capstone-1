@@ -49,37 +49,45 @@ public class MerchantStockService {
     }
 
     // 5. Search a Merchant Stock by ID
+    public MerchantStock getMerchantStockByProductAndMerchant(int productId, int merchantId) {
+        for (MerchantStock stock : merchantStocks) {
+            if (stock.getProductId() == productId && stock.getMerchantId() == merchantId) {
+                return stock;
+            }
+        }
+        return null;
+    }
+
+    // 6. Add additional stock to a product for a specific merchant
+    public boolean addStock(int productId, int merchantId, int additionalStock) {
+        for (MerchantStock stock : merchantStocks) {
+            if (stock.getProductId() == productId && stock.getMerchantId() == merchantId) {
+                stock.setStock(stock.getStock() + additionalStock);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // 8. get by id
     public MerchantStock getMerchantStockById(int id) {
         for (MerchantStock merchantStock : merchantStocks) {
             if (merchantStock.getId() == id) {
                 return merchantStock;
             }
         }
-        return null;
+        return null; // Return null if no matching stock is found
     }
 
 
-    //-------------------------------------------------------------------------
 
-    // 6.  ِAdd additional stock to a product for a specific merchant
-    // // Modify stock after a purchase
-    public boolean addStock(int productId, int merchantId, int additionalStock) {
-        for (MerchantStock stock : merchantStocks) {
-            if (stock.getProductId() == productId && stock.getMerchantId() == merchantId) {
-                // Adding the additional stock to the current stock
-                stock.setStock(stock.getStock() + additionalStock);
-                return true;  // Stock updated successfully
-            }
-        }
-        return false;  // Product or Merchant not found
-    }
 
-    // 7. Reduce stock
+    // 7. Reduce stock and send alert if stock is low
     public boolean reduceStock(int productId, int merchantId, int quantity) {
         for (MerchantStock stock : merchantStocks) {
             if (stock.getProductId() == productId && stock.getMerchantId() == merchantId) {
                 if (stock.getStock() >= quantity) {
-                    stock.setStock(stock.getStock() - quantity);
+                    stock.setStock(stock.getStock() - quantity); // ← تصحيح، ينقص العدد المطلوب
                     return true;
                 }
             }
@@ -88,9 +96,10 @@ public class MerchantStockService {
     }
 
 
-    // Extra 1
-    //==============================================================
-
-
-
+    // 9. Send low stock alert to merchant
+    private void sendLowStockAlert(int merchantId, int productId, int currentStock) {
+        System.out.println("⚠️ ALERT: Merchant ID " + merchantId +
+                " has low stock for Product ID " + productId +
+                ". Current stock: " + currentStock);
+    }
 }

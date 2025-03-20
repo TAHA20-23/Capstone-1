@@ -1,6 +1,5 @@
 package com.example.capstone1.UserController;
 
-
 import com.example.capstone1.MerchantStockModel.MerchantStock;
 import com.example.capstone1.MerchantStockService.MerchantStockService;
 import com.example.capstone1.ProductModel.Product;
@@ -16,7 +15,6 @@ import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/va/users")
@@ -84,51 +82,61 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(user);
     }
 
-
+    //Extra 1
+    //================================================================================
     // Endpoint to handle the purchase of a product
     @PostMapping("/buy")
     public ResponseEntity<String> buyProduct(@RequestParam int userId, @RequestParam int productId, @RequestParam int merchantId, @RequestParam int quantity) {
-        // Validate the user ID, product ID, and merchant ID
+
+        // Validate user existence
         User user = userService.getUserById(userId);
         if (user == null) {
-            return ResponseEntity.status(400).body("User not found.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User not found.");
         }
 
+        // Validate product existence
         Product product = productService.getProductById(productId);
         if (product == null) {
-            return ResponseEntity.status(400).body("Product not found.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Product not found.");
         }
 
-        MerchantStock merchantStock = merchantStockService.getMerchantStockById(merchantId);
-        if (merchantStock == null || merchantStock.getProductId() != productId) {
-            return ResponseEntity.status(400).body("Merchant does not have this product.");
+        // Validate merchant stock for the specified product
+        MerchantStock merchantStock = merchantStockService.getMerchantStockByProductAndMerchant(productId, merchantId);
+        if (merchantStock == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Merchant does not have this product.");
         }
 
-        // Check if the merchant has enough stock for the product
+        // Check if the merchant has enough stock
         if (merchantStock.getStock() < quantity) {
-            return ResponseEntity.status(400).body("Insufficient stock.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Insufficient stock.");
         }
 
-        // Check if the user has enough balance to make the purchase
-        if (user.getBalance() < product.getPrice() * quantity) {
-            return ResponseEntity.status(400).body("Insufficient balance.");
+        // Calculate total price
+        double totalPrice = product.getPrice() * quantity;
+
+        // Check if user has enough balance
+        if (user.getBalance() < totalPrice) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Insufficient balance.");
         }
 
-        // Deduct the stock from the merchant
-        merchantStockService.addStock(productId, merchantId, -quantity);
+        // Deduct stock from the merchant
+        boolean stockReduced = merchantStockService.reduceStock(productId, merchantId, quantity);
+        if (!stockReduced) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error in stock reduction.");
+        }
 
-        // Deduct the price from the user's balance
-        user.setBalance(user.getBalance() - (product.getPrice() * quantity));
+        // Deduct balance from the user
+        user.setBalance(user.getBalance() - totalPrice);
 
-        // Save the updated user and merchant stock
+        // Update user and merchant stock
         userService.updateUser(userId, user);
         merchantStockService.updateMerchantStock(merchantId, merchantStock);
 
-        return ResponseEntity.status(200).body("Product purchased successfully.");
+        return ResponseEntity.status(HttpStatus.OK).body("Product purchased successfully.");
     }
 
-    //Extra
-    //===============================================
+    // Extra Features
+    // ===============================================
     @PutMapping("/change-username/{id}")
     public ResponseEntity<?> updateUsername(@PathVariable int id, @RequestBody String newUsername) {
         boolean isUsernameUpdated = userService.updateUsername(id, newUsername);
@@ -147,4 +155,38 @@ public class UserController {
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Old password is incorrect.");
     }
+
+    //EXtar5
+    //================================
+
+    // Add product to wishlist
+    @PostMapping("/{userId}/wishlist/add/{productId}")
+    public ResponseEntity<String> addToWishlist(@PathVariable int userId, @PathVariable int productId) {
+        boolean added = userService.addToWishlist(userId, productId);
+        if (added) {
+            return ResponseEntity.status(HttpStatus.OK).body("Product added to wishlist.");
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Product is already in wishlist or user not found.");
+    }
+
+    //  Remove product from wishlist
+    @DeleteMapping("/{userId}/wishlist/remove/{productId}")
+    public ResponseEntity<String> removeFromWishlist(@PathVariable int userId, @PathVariable int productId) {
+        boolean removed = userService.removeFromWishlist(userId, productId);
+        if (removed) {
+            return ResponseEntity.status(HttpStatus.OK).body("Product removed from wishlist.");
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found in wishlist or user does not exist.");
+    }
+
+    // Get user's wishlist
+    @GetMapping("/{userId}/wishlist")
+    public ResponseEntity<ArrayList<Integer>> getWishlist(@PathVariable int userId) {
+        ArrayList<Integer> wishlist = userService.getWishlist(userId);
+        if (wishlist == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(wishlist);
+    }
+
 }

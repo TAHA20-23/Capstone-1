@@ -49,7 +49,7 @@ public class ProductService {
         return false;
     }
 
-    // 5. Search a Product by ID // also extra 1
+    // 5. Search a Product by ID //
     public Product getProductById(int id) {
         for (Product product : products) {
             if (product.getId() == id) {
@@ -59,94 +59,46 @@ public class ProductService {
         return null;
     }
 
-    //Extra 2
-    //===========================================
-    // 1. Get products by category
-    public ArrayList<Product> getProductsByCategory(int categoryId) {
-        ArrayList<Product> categoryProducts = new ArrayList<>();
-        for (Product product : products) {
-            if (product.getCategoryId() == categoryId) {
-                categoryProducts.add(product);
-            }
-        }
-        return categoryProducts;
-    }
 
 
-    // Extra 3
+
+    // Extra 2
     //==================================
-    // Add ratings to the product
-    public boolean addRatingsToProduct(Product product, ArrayList<Integer> ratings) {
-        // Check if the product is null, return false if the product is not found
-        if (product == null) {
-            return false; // Product not found
+    // Add a rating to a product
+    public boolean addRating(int productId, int rating) {
+        Product product = getProductById(productId);
+        if (product == null || rating < 1 || rating > 5) {
+            return false; // Invalid product or rating
         }
 
-        // Initialize the ratings list if it is null
-        if (product.getRatings() == null) {
-            product.setRatings(new ArrayList<>()); // Initialize the ratings list if it's null
-        }
-
-        // Add new ratings to the product's ratings list
-        for (int rating : ratings) {
-            product.getRatings().add(rating);
-        }
-
-        // Recalculate the average rating after adding new ratings
-        double averageRating = calculateAverageRating(product);
-        product.setAverageRating(averageRating);
-        return true;
-    }
-
-    // Calculate the average rating of a product
-    public double calculateAverageRating(Product product) {
-        // Check if the product is null
-        if (product == null) {
-            return 0.0; // Return 0.0 if product is not found
-        }
-
-        // If ratings is null, initialize it
+        // Ensure ratings list is initialized
         if (product.getRatings() == null) {
             product.setRatings(new ArrayList<>());
         }
 
-        // Calculate the sum of ratings if the list is not empty
-        double sum = 0;
-        for (int rating : product.getRatings()) {
-            sum += rating;
-        }
+        //  Add the rating and recalculate the average
+        product.getRatings().add(rating);
 
-        // Return the average rating
-        return sum / product.getRatings().size();
+        double sum = 0;
+        for (int r : product.getRatings()) {
+            sum += r;
+        }
+        product.setAverageRating(sum / product.getRatings().size());
+
+        return true;
     }
+
+
+
+
 
     //Extra 4
-    // Add product to the list
-    // Toggle favorite status of a product
-    public boolean toggleFavorite(int id) {
-        for (Product product : products) {
-            if (product.getId() == id) {
-                product.setFavorite(!product.isFavorite());  // Toggle favorite status
-                return true;
-            }
-        }
-        return false;
-    }
-
-    // Get all favorite products
-    public ArrayList<Product> getFavoriteProducts() {
-        ArrayList<Product> favoriteProducts = new ArrayList<>();
-        for (Product product : products) {
-            if (product.isFavorite()) {
-                favoriteProducts.add(product);
-            }
-        }
-        return favoriteProducts;
-    }
-
 
 }
 
-//        Product product = findProductById(productId);
-//        double averageRating = calculateAverageRating(productId);
+
+
+
+
+
 

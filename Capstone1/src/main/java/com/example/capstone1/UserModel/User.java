@@ -4,6 +4,9 @@ package com.example.capstone1.UserModel;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+
+import java.util.ArrayList;
+
 @Data
 @AllArgsConstructor
 public class User {
@@ -32,4 +35,13 @@ public class User {
 
     @Min(value = 0, message = "Balance must be positive")
     private double balance;
+
+    //extra
+    private boolean isVIP;
+    private int totalPurchases;
+    private int totalRatings;
+    private int discount;
+
+    // extra
+    private ArrayList<Integer> wishlist;
 }

@@ -18,6 +18,17 @@ public class Merchant {
     @Size(min = 3, message = "Name must be more than 3 characters long")
     private String name;
 
+    @NotNull(message = "Id can't be null")
+    private int productId;
+
+    @NotNull(message = "Id can't be null")
+    private int merchantId;
+
+    @NotNull(message = "Id can't be null")
+    private int stock;
+
+
+
 
 //    {
 //  "id": 1,

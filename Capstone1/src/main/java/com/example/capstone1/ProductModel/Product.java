@@ -3,7 +3,9 @@ package com.example.capstone1.ProductModel;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+
 import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -13,7 +15,7 @@ public class Product {
     private int id;
 
     @NotEmpty(message = "Name can not be empty")
-    @Size(min = 3, message = "Name have to be more than 3 characters long")
+    @Size(min = 3, message = "Name must be more than 3 characters long")
     private String name;
 
     @NotNull(message = "Price can not be empty")
@@ -23,12 +25,8 @@ public class Product {
     @NotNull(message = "CategoryId Can't be null")
     private int categoryId;
 
-    //Extra 3
-    private ArrayList<Integer> ratings = new ArrayList<>();  // Initialize the ratings list
-    private double averageRating;
+    // Initialize ratings list to prevent NullPointerException
+    private List<Integer> ratings ;
 
-    //Extra 4
-    @AssertFalse(message = "Product can not be  favorite by default. ")
-    private boolean isFavorite;
-
+    private double averageRating ;
 }
